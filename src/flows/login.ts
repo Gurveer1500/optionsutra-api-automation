@@ -5,9 +5,17 @@ import { sendOTP, verifyOTP } from "../endpoints/endpoints";
 import { LoginTestFile } from "../types/loginTest";
 import { runAssertions } from "../assertions/assertions";
 
-export async function runLoginTest() {
+export type AuthData = {
+  cookies: string;
+  userId: string;
+  headers: Record<string, string>;
+};
+
+export async function runLoginTest(): Promise<AuthData | null> {
     const raw = fs.readFileSync("./src/testcases/login.json", "utf-8")
     const testFile : LoginTestFile = JSON.parse(raw)
+    
+    let authData: AuthData | null = null
 
     for (const test of testFile.tests) {
         console.log(`RUNNING: ${test.name}`)
@@ -38,7 +46,7 @@ export async function runLoginTest() {
          if (!test.verifyOTP) {
             throw new Error(`Test "${test.name}" is missing verifyOtp configuration`)
         }
-        const otp = test.verifyOTP.payload?.["otp"] === "{{OTP}}"? env.OTP: test.verifyOTP?.payload?.["otp"]
+        const otp = test.verifyOTP.payload?.["otp"] === "{{OTP}}" ? env.OTP : test.verifyOTP?.payload?.["otp"]
 
         const verifyOTPResponse = await httpClient({
             method:"POST",
@@ -59,6 +67,18 @@ export async function runLoginTest() {
         const userId = verifyOTPResponse.headers.get("x-user-id")
 
         console.log("Test passed\n")
-
+        
+        if (!authData && cookie && userId) {
+          authData = {
+            cookies: cookie,
+            userId: userId,
+            headers: {
+              "Cookie": cookie,
+              "x-user-id": userId
+            }
+          }
+        }
     }
+    
+    return authData
 }
