@@ -1,0 +1,71 @@
+{
+  "tests": [
+    {
+      "name": "valid login",
+      "sendOTP": {
+        "payload": {
+          "user_key": "{{USER_KEY}}"
+        },
+        "assertions": {
+          "status": 200,
+          "body": {
+            "message": "OTP sent successfully"
+          }
+        }
+      },
+      "verifyOTP": {
+        "payload": {
+          "otp": "{{OTP}}"
+        },
+        "assertions": {
+          "status": 200
+        }
+      }
+    },
+    {
+      "name": "invalid login",
+      "sendOTP": {
+        "payload": {
+          "user_key": "{{USER_KEY}}"
+        },
+        "assertions": {
+          "status": 200,
+          "body": {
+            "message": "OTP sent successfully"
+          }
+        }
+      },
+      "verifyOTP": {
+        "payload": {
+          "otp": "000000"
+        },
+        "assertions": {
+          "status": 400
+        }
+      }
+    },
+    {
+      "name": "invalid number login",
+      "sendOTP": {
+        "payload": {
+          "user_key": "123456223237890"
+        },
+        "assertions": {
+          "status": 400,
+          "body": {
+            "status": "failure",
+            "message": "User not found"
+          }
+        }
+      },
+      "verifyOTP": {
+        "payload": {
+          "otp": "000000"
+        },
+        "assertions": {
+          "status": 400
+        }
+      }
+    }
+  ]
+}
